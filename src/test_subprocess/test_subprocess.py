@@ -1,6 +1,7 @@
 #!/usr/local/bin/python3
 # -*- coding: utf-8 -*-
 import os
+import sys
 import ast
 import shlex
 import inspect
@@ -8,8 +9,13 @@ import inspect
 import subprocess
 from random import random
 from time import time
-from oppugno.cuda import Cuda
 from prettytable import PrettyTable
+
+PATH_CURR = os.path.dirname(os.path.realpath(__file__))
+PATH_BASE = os.path.dirname(PATH_CURR)
+sys.path.append(PATH_BASE)
+
+from oppugno.cuda import Cuda
 
 DEFAULT_ARR_SIZE = 1 << 10
 ALPHA = 2.0
