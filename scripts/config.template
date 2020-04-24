@@ -1,0 +1,13 @@
+[all:children]
+gpu_hosts
+cpu_hosts
+
+[all:vars]
+ansible_user=
+remote_dir=
+
+[gpu_hosts]
+; list of gpu-enabled hostname/ip
+
+[cpu_hosts]
+; list of non gpu-enabled hostname/ip

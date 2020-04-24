@@ -1,0 +1,18 @@
+---
+
+- name: upload repo
+  hosts: gpu_hosts
+  vars:
+    script_dir: "{{ playbook_dir | dirname }}"
+    repo_dir: "{{ script_dir | dirname }}"
+  tasks:
+    - name: upload repo
+      synchronize:
+        src: "{{ repo_dir }}/"
+        dest: "{{ remote_dir }}"
+        delete: yes
+        archive: yes
+        use_ssh_args: yes
+        rsync_opts:
+          - "--exclude-from={{ repo_dir }}/.gitignore"
+          - "--exclude-from={{ script_dir }}/.rsyncignore"

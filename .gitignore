@@ -127,3 +127,12 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Ansible inventory files
+**/config
+
+# vscode config files
+**/.vscode
+
+# Virtualenv for Pypy
+**/env-pypy/
