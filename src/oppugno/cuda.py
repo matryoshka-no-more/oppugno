@@ -3,7 +3,8 @@
 
 
 class Cuda:
-    pass
+    def create_kernel(self):
+        pass
 
 
 class KernelLoop:

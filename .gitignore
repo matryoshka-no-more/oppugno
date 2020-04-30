@@ -136,3 +136,6 @@ dmypy.json
 
 # Virtualenv for Pypy
 **/env-pypy/
+
+# MacOS .DS_Store
+.DS_Store
