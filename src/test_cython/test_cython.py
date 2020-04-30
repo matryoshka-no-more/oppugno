@@ -67,7 +67,7 @@ def compare(N=DEFAULT_ARR_SIZE):
     time_gpu, result_gpu = saxpy_gpu(data_x, data_y)
 
     for i in range(len(result_cpu)):
-        if result_cpu[i] - result_gpu[i] > 0.01:
+        if result_cpu[i] - result_gpu[i] > 0.0001:
             print("Failed: [{}]\t(cpu){:4f} != {:4f}(gpu)".format(
                 i, result_cpu[i], result_gpu[i]))
             return time_cpu, time_gpu
