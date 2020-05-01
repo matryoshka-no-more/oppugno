@@ -6,6 +6,7 @@ cryptography==2.9
 Cython==0.29.16
 Jinja2==2.11.1
 MarkupSafe==1.1.1
+numpy==1.18.3
 paramiko==2.7.1
 prettytable==0.7.2
 pycparser==2.20

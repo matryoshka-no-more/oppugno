@@ -186,6 +186,7 @@ def compare(N=DEFAULT_ARR_SIZE):
 
 def main():
     t = PrettyTable(["Array Size", "GPU speedup"])
+    t.align["Array Size"] = "l"
     for i in range(2, 21):
         N = 1 << i
         time_cpu, time_gpu = compare(N)

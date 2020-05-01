@@ -67,9 +67,10 @@ def compare(N=DEFAULT_ARR_SIZE):
     time_gpu, result_gpu = saxpy_gpu(data_x, data_y)
 
     for i in range(len(result_cpu)):
-        if result_cpu[i] - result_gpu[i] > 0.0001:
-            print("Failed: [{}]\t(cpu){:4f} != {:4f}(gpu)".format(
-                i, result_cpu[i], result_gpu[i]))
+        if result_cpu[i] != result_gpu[i]:
+            print("Failed: [{}]\t(cpu){:4f} != {:4f}(gpu) diff = {}".format(
+                i, result_cpu[i], result_gpu[i],
+                result_cpu[i] - result_gpu[i]))
             return time_cpu, time_gpu
     print("Success: the results from cpu and gpu are consistent")
     return time_cpu, time_gpu
@@ -77,6 +78,7 @@ def compare(N=DEFAULT_ARR_SIZE):
 
 def main():
     t = PrettyTable(["Array Size", "GPU speedup"])
+    t.align["Array Size"] = "l"
     for i in range(2, 21):
         N = 1 << i
         time_cpu, time_gpu = compare(N)

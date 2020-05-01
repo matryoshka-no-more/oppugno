@@ -1,6 +1,7 @@
 #!/usr/local/bin/python3
 # -*- coding: utf-8 -*-
 import os
+import numpy
 import shutil
 from setuptools import setup
 from distutils.extension import Extension
@@ -69,6 +70,12 @@ class custom_build_ext(build_ext):
 
 
 CUDA = get_cuda_config()
+
+# Obtain the numpy include directory. This logic works across numpy versions.
+try:
+    numpy_include = numpy.get_include()
+except AttributeError:
+    numpy_include = numpy.get_numpy_include()
 
 ext = Extension(
     "oppugno_cuda",
