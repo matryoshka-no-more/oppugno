@@ -6,8 +6,10 @@ __global__ void
 saxpy_kernel(int N, float alpha, float* x, float* y, float* result) {
     int index = blockIdx.x * blockDim.x + threadIdx.x;
 
-    if (index < N)
-       result[index] = alpha * x[index] + y[index];
+    if (index >= N) return;
+    for (int i = 0; i < N; i++) {
+        result[index] = alpha * x[index] + y[index];
+    }
 }
 
 bool saxpy_cuda(int N, float alpha, float* xarray, float* yarray, float* resultarray) {

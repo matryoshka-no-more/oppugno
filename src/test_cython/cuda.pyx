@@ -12,6 +12,21 @@ cdef extern from ".cuda/cuda.h":
     cdef bool saxpy_cuda(int N, float alpha, float* xarray, float* yarray, float* resultarray)
 
 
+# def saxpy(N, alpha, xarray, yarray, resultarray):
+#     cdef np.ndarray[np.float32_t, ndim=1, mode="c"] xarr = np.array(xarray, dtype=np.float32)
+#     cdef np.ndarray[np.float32_t, ndim=1, mode="c"] yarr = np.array(yarray, dtype=np.float32)
+#     cdef float* rarr = <float *> malloc(N * sizeof(float))
+#     if not rarr:
+#         raise MemoryError()
+#     try:
+#         rc = saxpy_cuda(N, alpha, &xarr[0], &yarr[0], rarr)
+#         for i in range(N):
+#             resultarray[i] = rarr[i]
+#         return rc
+#     finally:
+#         free(rarr)
+
+
 def saxpy(N, alpha, xarray, yarray, resultarray):
     cdef array.array xarr = array.array("f", xarray)
     cdef array.array yarr = array.array("f", yarray)
@@ -24,8 +39,7 @@ def saxpy(N, alpha, xarray, yarray, resultarray):
             resultarray[i] = rarr[i]
         return rc
     finally:
-        free(rarr)
-    
+        free(rarr)    
     
 
 def say_hello_to(name):

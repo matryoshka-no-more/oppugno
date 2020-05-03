@@ -21,6 +21,9 @@ int main(void) {
         resultarray[i] = 0.f;
     }
 
+    // start time for all operations
+    double all_start = CycleTimer::currentSeconds();
+
     // compute number of blocks and threads per block
     const int threadsPerBlock = 512;
     const int blocks = (N + threadsPerBlock - 1) / threadsPerBlock;
@@ -39,14 +42,14 @@ int main(void) {
     cudaMemcpy(device_y, yarray, N * sizeof(float), cudaMemcpyHostToDevice);
 
     // start timing after allocation of device memory
-    double startTime = CycleTimer::currentSeconds();
+    double cuda_start = CycleTimer::currentSeconds();
 
     // run kernel
     saxpy_kernel<<<blocks, threadsPerBlock>>>(N, alpha, device_x, device_y, device_result);
     cudaDeviceSynchronize();
 
     // end timing after result has been copied back into host memory
-    double endTime = CycleTimer::currentSeconds();
+    double cuda_end = CycleTimer::currentSeconds();
 
     // copy result from GPU using cudaMemcpy
     cudaMemcpy(resultarray, device_result, N * sizeof(float), cudaMemcpyDeviceToHost);
@@ -56,13 +59,18 @@ int main(void) {
         fprintf(stderr, "WARNING: A CUDA error occured: code=%d, %s\n", errCode, cudaGetErrorString(errCode));
     }
 
-    double overallDuration = endTime - startTime;
-    printf("Overall: %.3f ms\n", 1000.f * overallDuration);
-
     // free memory buffers on the GPU
     cudaFree(device_x);
     cudaFree(device_y);
     cudaFree(device_result);
+
+    // end time for all operations
+    double all_end = CycleTimer::currentSeconds();
+
+    // print time elapse
+    double cuda_duration = cuda_end - cuda_start;
+    double all_duration = all_end - all_start;
+    printf("All:\t%.3f ms\nCUDA:\t%.3f ms\n", 1000.f * all_duration, 1000.f * cuda_duration);
 
     delete [] xarray;
     delete [] yarray;

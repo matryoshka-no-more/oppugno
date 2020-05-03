@@ -95,7 +95,7 @@ ext = Extension(
             "-fPIC"
         ]
     },
-    include_dirs=[CUDA["include"], ".cuda"])
+    include_dirs=[CUDA["include"], ".cuda", numpy_include])
 
 setup(name="oppugno_cuda",
       ext_modules=[ext],

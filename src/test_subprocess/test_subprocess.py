@@ -17,6 +17,7 @@ sys.path.append(PATH_BASE)
 
 from oppugno.cuda import Cuda
 
+TABLE_HEADERS = ["Array Size", "GPU speedup"]
 DEFAULT_ARR_SIZE = 1 << 10
 ALPHA = 2.0
 execname = os.path.join(os.getcwd(), "main")
@@ -29,8 +30,10 @@ __global__ void
 saxpy_kernel(int N, float alpha, float* x, float* y, float* result) {
     int index = blockIdx.x * blockDim.x + threadIdx.x;
 
-    if (index < N)
-       result[index] = alpha * x[index] + y[index];
+    if (index >= N) return;
+    for (int i = 0; i < N; i++) {
+        result[index] = alpha * x[index] + y[index];
+    }
 }
 
 int main(void) {
@@ -137,7 +140,8 @@ def saxpy_cpu(data_x, data_y, alpha=ALPHA):
     size = len(data_x)
     result = [0.0] * size
     for i in range(size):
-        result[i] = alpha * data_x[i] + data_y[i]
+        for _ in range(size):
+            result[i] = alpha * data_x[i] + data_y[i]
     return result
 
 
@@ -176,7 +180,7 @@ def compare(N=DEFAULT_ARR_SIZE):
     time_gpu, result_gpu = saxpy_gpu(data_x, data_y)
 
     for i in range(len(result_cpu)):
-        if result_cpu[i] - result_gpu[i] > 0.01:
+        if result_cpu[i] - result_gpu[i] > 0.00001:
             print("Failed: [{}]\t(cpu){:4f} != {:4f}(gpu)".format(
                 i, result_cpu[i], result_gpu[i]))
             return time_cpu, time_gpu
@@ -185,9 +189,10 @@ def compare(N=DEFAULT_ARR_SIZE):
 
 
 def main():
-    t = PrettyTable(["Array Size", "GPU speedup"])
-    t.align["Array Size"] = "l"
-    for i in range(2, 21):
+    t = PrettyTable(TABLE_HEADERS)
+    t.align[TABLE_HEADERS[0]] = "l"
+    t.align[TABLE_HEADERS[1]] = "r"
+    for i in range(2, 16):
         N = 1 << i
         time_cpu, time_gpu = compare(N)
         t.add_row([N, "{:4f}".format(time_cpu / time_gpu)])
