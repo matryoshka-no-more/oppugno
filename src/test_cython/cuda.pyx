@@ -10,7 +10,7 @@ from libc.stdlib cimport malloc, free
 
 cdef extern from ".cuda/cuda.h":
     cdef bool saxpy_cuda(int N, float alpha, float* xarray, float* yarray, float* resultarray)
-
+    cdef bool matmul_cuda(int rows, int cols, int inner, float* xarray, float* yarray, float* resultarray)
 
 # def saxpy(N, alpha, xarray, yarray, resultarray):
 #     cdef np.ndarray[np.float32_t, ndim=1, mode="c"] xarr = np.array(xarray, dtype=np.float32)
@@ -40,7 +40,19 @@ def saxpy(N, alpha, xarray, yarray, resultarray):
         return rc
     finally:
         free(rarr)    
-    
 
-def say_hello_to(name):
-    print("Hello {}!".format(name))
+
+def matmul(rows, cols, inner, xarray, yarray, resultarray):
+    cdef np.float32_t [:] xarr = np.array(xarray, dtype=np.float32).flatten()
+    cdef np.float32_t [:] yarr = np.array(yarray, dtype=np.float32).flatten()
+    cdef float* rarr = <float *> malloc(rows * cols * sizeof(float))
+    if not rarr:
+        raise MemoryError()
+    try:
+        rc = matmul_cuda(rows, cols, inner, &xarr[0], &yarr[0], rarr)
+        for i in range(rows):
+            for j in range(cols):
+                resultarray[i][j] = rarr[i * cols + j]
+        return rc
+    finally:
+        free(rarr)

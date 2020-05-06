@@ -9,7 +9,7 @@ import subprocess
 from random import random
 from time import time
 from prettytable import PrettyTable
-from oppugno_cuda import saxpy
+from oppugno_cuda import saxpy, matmul
 
 PATH_CURR = os.path.dirname(os.path.realpath(__file__))
 PATH_BASE = os.path.dirname(PATH_CURR)
@@ -36,10 +36,19 @@ def time_func(method):
     return func
 
 
-def get_data(size=DEFAULT_ARR_SIZE):
-    data = [0] * size
-    for i in range(size):
-        data[i] = random()
+def get_data(size=DEFAULT_ARR_SIZE, init=True):
+    if init:
+        data = [0.0 for _ in range(size)]
+    else:
+        data = [random() for _ in range(size)]
+    return data
+
+
+def get_matrix(rows=DEFAULT_ARR_SIZE, cols=DEFAULT_ARR_SIZE, init=True):
+    if init:
+        data = [[0.0 for _ in range(cols)] for _ in range(rows)]
+    else:
+        data = [[random() for _ in range(cols)] for _ in range(rows)]
     return data
 
 
@@ -61,7 +70,31 @@ def saxpy_gpu(data_x, data_y, alpha=ALPHA):
     return result
 
 
-def compare(N=DEFAULT_ARR_SIZE):
+@time_func
+def matmul_gpu(mat_x, mat_y):
+    rows = len(mat_x)
+    cols = 0 if not mat_y else len(mat_y[0])
+    inner = len(mat_y)
+    result = get_matrix(rows, cols, init=True)
+    matmul(rows, cols, inner, mat_x, mat_y, result)
+    return result
+
+
+@time_func
+def matmul_cpu(mat_x, mat_y):
+    rows = len(mat_x)
+    cols = 0 if not mat_y else len(mat_y[0])
+    inner = len(mat_y)
+    result = get_matrix(rows, cols, init=True)
+    for i in range(rows):
+        for j in range(cols):
+            # oppu.kernel
+            for k in range(inner):
+                result[i][j] += mat_x[i][k] * mat_y[k][j]
+    return result
+
+
+def compare_saxpy(N=DEFAULT_ARR_SIZE):
     print("========== compare array size: {} ==========".format(N))
     data_x = get_data(N)
     data_y = get_data(N)
@@ -78,13 +111,32 @@ def compare(N=DEFAULT_ARR_SIZE):
     return time_cpu, time_gpu
 
 
+def compare_matmul(N=DEFAULT_ARR_SIZE):
+    print("========== compare array size: {} ==========".format(N))
+    mat_x = get_matrix(N, N)
+    mat_y = get_matrix(N, N)
+    time_cpu, result_cpu = matmul_cpu(mat_x, mat_y)
+    time_gpu, result_gpu = matmul_gpu(mat_x, mat_y)
+
+    for i in range(len(result_cpu)):
+        for j in range(len(result_cpu[0])):
+            if result_cpu[i][j] - result_gpu[i][j] > 0.000001:
+                print(
+                    "Failed: [{}]\t(cpu){:4f} != {:4f}(gpu) diff = {}".format(
+                        i, result_cpu[i][j], result_gpu[i][j],
+                        result_cpu[i][j] - result_gpu[i][j]))
+                return time_cpu, time_gpu
+    print("Success: the results from cpu and gpu are consistent")
+    return time_cpu, time_gpu
+
+
 def main():
     t = PrettyTable(TABLE_HEADERS)
     t.align[TABLE_HEADERS[0]] = "l"
     t.align[TABLE_HEADERS[1]] = "r"
     for i in range(1, 16):
         N = 1 << i
-        time_cpu, time_gpu = compare(N)
+        time_cpu, time_gpu = compare_matmul(N)
         t.add_row([N, "{:4f}".format(time_cpu / time_gpu)])
 
     print("\n========== Summary ==========\n")
