@@ -63,7 +63,9 @@ def matmul(mat_x: oppu.cu_input(dim=2), mat_y: oppu.cu_input(dim=2)):
     for i in range(rows):
         for j in range(cols):
             for k in range(inner):
-                result[i][j] += mat_x[i][k] * mat_y[k][j]
+                prod_sum = 0.0
+                prod_sum += mat_x[i][k] * mat_y[k][j]
+                result[i][j] = prod_sum
     return result
 
 

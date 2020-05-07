@@ -15,8 +15,6 @@ PATH_CURR = os.path.dirname(os.path.realpath(__file__))
 PATH_BASE = os.path.dirname(PATH_CURR)
 sys.path.append(PATH_BASE)
 
-from oppugno.cuda import Cuda
-
 TABLE_HEADERS = ["Array Size", "CPU Time", "GPU Time", "GPU speedup"]
 DEFAULT_ARR_SIZE = 1 << 10
 ALPHA = 2.0
@@ -137,7 +135,11 @@ def main():
     for i in range(1, 11):
         N = 1 << i
         time_cpu, time_gpu = compare_matmul(N)
-        t.add_row([N, time_cpu, time_gpu, "{:4f}".format(time_cpu / time_gpu)])
+        t.add_row([
+            N, "{:.3f}ms".format(time_cpu * 1000),
+            "{:.3f}ms".format(time_gpu * 1000),
+            "{:4f}".format(time_cpu / time_gpu)
+        ])
 
     print("\n========== Summary ==========\n")
     print(t)

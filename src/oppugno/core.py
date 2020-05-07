@@ -5,46 +5,15 @@ import ast
 import inspect
 import astpretty
 from .type import *
+from .render import render
 
-
-class Func:
-    def __init__(self):
-        self.name = ""
-        self.raw = ""
-
-
-class GPUFunc(Func):
-    def __init__(self):
-        super().__init__()
-        self.dims = []
-        self.inputs = []
-        self.outputs = []
-        self.params = []
-
-
-class PythonFunc(Func):
-    def __init__(self):
-        super().__init__()
-        self.ast = None
-        self.params = []
-
-
-class CudaFunc(GPUFunc):
-    def __init__(self):
-        super().__init__()
-
-
-class KernelFunc(GPUFunc):
-    def __init__(self):
-        super().__init__()
+DEVICE_BLOCK_DIMS = ["x", "y", "z"]
+OPPU_REGISTRY = {}
 
 
 class Cuda:
-    python_func = PythonFunc()
-    cuda_func = CudaFunc()
-    kernel_func = KernelFunc()
-
-    def __init__(self):
+    def __init__(self, name):
+        self.name = name
         self.dims = []
         self.params = []
         self.inputs = []
@@ -53,10 +22,32 @@ class Cuda:
     def get_dim_min(self):
         return min([o.dim for o in self.outputs])
 
+    def get_args(self):
+        return self.dims + self.inputs + self.outputs + self.params
 
-class KernelLoop:
-    index_start = 0
-    index_stop = 0
+    def get_args_python(self):
+        return ", ".join([a.name for a in self.get_args()])
+
+    def get_args_cuda(self):
+        return ", ".join([
+            "{} {}".format(a.get_full_type(), a.name) for a in self.get_args()
+        ])
+
+    def get_cython_func_name(self):
+        return "{}_cython".format(self.name)
+
+    def get_cython_func_import(self):
+        return "from oppugno_cuda import {}".format(
+            self.get_cython_func_name())
+
+    def get_cython_func_call(self):
+        return "{}({})".format(self.get_cython_func_name(),
+                               self.get_args_python())
+
+    def exec_cython(self):
+        cmd = "{}\n{}".format(self.get_cython_func_import,
+                              self.get_cython_func_call)
+        exec(cmd)
 
 
 def parse_ast_arg(arg_name, arg_type, cuda):
@@ -87,11 +78,6 @@ def parse_ast_arg(arg_name, arg_type, cuda):
 
 def cuda(method):
     def func(*args, **kw):
-        cuda = Cuda()
-        func_python = cuda.python_func
-        func_kernel = cuda.kernel_func
-        func_cuda = cuda.cuda_func
-
         code_str = inspect.getsource(method)
         print(code_str)
         code_ast = ast.parse(code_str)
@@ -100,8 +86,11 @@ def cuda(method):
         func_args = func_def.args.args
         func_body = func_def.body
 
-        func_python.ast = func_def
-        func_python.name = func_name
+        cuda = OPPU_REGISTRY.get(func_name)
+        if cuda:
+            cuda.exec_cython()
+
+        cuda = Cuda(func_name)
         astpretty.pprint(code_ast)
 
         for func_arg in func_args:
@@ -126,6 +115,9 @@ def cuda(method):
                     targets.append(st.target.id)
                     iters.append(st.iter.args[-1].id)
                     st = st.body[0]
+                targets.append(st.target.id)
+                iters.append(st.iter.args[-1].id)
+                # for s in st.body:
 
         print("inputs: {}".format(len(cuda.inputs)))
         for arg in cuda.inputs:
@@ -139,5 +131,7 @@ def cuda(method):
         print("dims: {}".format(len(cuda.dims)))
         for arg in cuda.dims:
             print(arg.name, arg.get_full_type())
+
+        render("cuda_h.j2", cuda)
 
     return func

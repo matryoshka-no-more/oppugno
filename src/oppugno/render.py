@@ -12,38 +12,7 @@ template_loader = FileSystemLoader(searchpath=PATH_TEMPLATE)
 template_env = Environment(loader=template_loader)
 
 
-def render(template, target=None):
-    template = template_env.get_template(template)
-    cuda = {
-        "name":
-        "saxpy",
-        "dims": [1 << 10, 1 << 10],
-        "inputs": [
-            {
-                "type": "float*",
-                "name": "xarray"
-            },
-            {
-                "type": "float*",
-                "name": "yarray"
-            },
-        ],
-        "outputs": [
-            {
-                "type": "float*",
-                "name": "resultarray"
-            },
-        ],
-        "params": [
-            {
-                "type": "float",
-                "name": "alpha"
-            },
-        ]
-    }
+def render(template_file, cuda, target=None):
+    template = template_env.get_template(template_file)
     result = template.render(cuda=cuda)
     print(result)
-
-
-if __name__ == "__main__":
-    render("cuda_h.j2")
