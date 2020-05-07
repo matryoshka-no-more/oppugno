@@ -19,7 +19,7 @@
     - name: upload source code
       command: "rsync -avrzH {{ repo_dir }}/ \
                 {{ ansible_user }}@{{ inventory_hostname}}:{{ remote_dir }} \
-                --delete={{ repo_dir }}/src/**/build \
+                --delete=src/**/build \
                 --exclude-from={{ repo_dir }}/.gitignore \
                 --exclude-from={{ script_dir }}/.rsyncignore"
       delegate_to: localhost

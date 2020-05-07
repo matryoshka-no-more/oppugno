@@ -17,7 +17,7 @@ sys.path.append(PATH_BASE)
 
 from oppugno.cuda import Cuda
 
-TABLE_HEADERS = ["Array Size", "GPU speedup"]
+TABLE_HEADERS = ["Array Size", "CPU Time", "GPU Time", "GPU speedup"]
 DEFAULT_ARR_SIZE = 1 << 10
 ALPHA = 2.0
 execname = os.path.join(os.getcwd(), "main")
@@ -132,12 +132,12 @@ def compare_matmul(N=DEFAULT_ARR_SIZE):
 
 def main():
     t = PrettyTable(TABLE_HEADERS)
+    t.align = "r"
     t.align[TABLE_HEADERS[0]] = "l"
-    t.align[TABLE_HEADERS[1]] = "r"
-    for i in range(1, 16):
+    for i in range(1, 11):
         N = 1 << i
         time_cpu, time_gpu = compare_matmul(N)
-        t.add_row([N, "{:4f}".format(time_cpu / time_gpu)])
+        t.add_row([N, time_cpu, time_gpu, "{:4f}".format(time_cpu / time_gpu)])
 
     print("\n========== Summary ==========\n")
     print(t)
