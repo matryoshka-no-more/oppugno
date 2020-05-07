@@ -1,0 +1,2 @@
+
+bool {{ cuda.name }}({% for dim in cuda.dims %}int x{{ loop.index0 }}, {% endfor %}{% for input in cuda.inputs %}{{ input.type }} {{ input.name }}, {% endfor %}{% for output in cuda.outputs %}{{ output.type }} {{ output.name }}{% if not loop.last %}, {% endif %}{% endfor %}{% for param in cuda.params %}, {{ param.type }} {{ param.name }}{% endfor %});

@@ -1,0 +1,29 @@
+---
+
+- name: upload repo
+  hosts: gpu_hosts
+  vars:
+    script_dir: "{{ playbook_dir | dirname }}"
+    repo_dir: "{{ script_dir | dirname }}"
+  tasks:
+    # - name: upload repo
+    #   synchronize:
+    #     src: "{{ repo_dir }}/"
+    #     dest: "{{ remote_dir }}"
+    #     delete: no
+    #     archive: yes
+    #     use_ssh_args: yes
+    #     rsync_opts:
+    #       - "--exclude-from={{ repo_dir }}/.gitignore"
+    #       - "--exclude-from={{ script_dir }}/.rsyncignore"
+    - name: upload source code
+      command: "rsync -avrzH {{ repo_dir }}/ \
+                {{ ansible_user }}@{{ inventory_hostname}}:{{ remote_dir }} \
+                --delete=src/**/build \
+                --exclude-from={{ repo_dir }}/.gitignore \
+                --exclude-from={{ script_dir }}/.rsyncignore"
+      delegate_to: localhost
+    - name: install pip dependencies
+      pip:
+        requirements: "{{ remote_dir }}/requirements.txt"
+        virtualenv: "{{ remote_dir }}/env"
