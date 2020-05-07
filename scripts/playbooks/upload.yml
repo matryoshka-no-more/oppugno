@@ -6,6 +6,7 @@
     script_dir: "{{ playbook_dir | dirname }}"
     repo_dir: "{{ script_dir | dirname }}"
   tasks:
+    # # the synchronize module does not work with ssh control master
     # - name: upload repo
     #   synchronize:
     #     src: "{{ repo_dir }}/"
@@ -16,6 +17,8 @@
     #     rsync_opts:
     #       - "--exclude-from={{ repo_dir }}/.gitignore"
     #       - "--exclude-from={{ script_dir }}/.rsyncignore"
+    
+    # use bare old rsync from localhost to reuse ssh control master
     - name: upload source code
       command: "rsync -avrzH {{ repo_dir }}/ \
                 {{ ansible_user }}@{{ inventory_hostname}}:{{ remote_dir }} \
@@ -23,6 +26,7 @@
                 --exclude-from={{ repo_dir }}/.gitignore \
                 --exclude-from={{ script_dir }}/.rsyncignore"
       delegate_to: localhost
+
     - name: install pip dependencies
       pip:
         requirements: "{{ remote_dir }}/requirements.txt"
