@@ -2,7 +2,7 @@ ansible==2.9.6
 astpretty==2.0.0
 bcrypt==3.1.7
 cffi==1.14.0
-cryptography==2.9
+cryptography==3.2
 Cython==0.29.16
 Jinja2==2.11.1
 MarkupSafe==1.1.1
